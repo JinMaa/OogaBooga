@@ -1,0 +1,20 @@
+[package]
+name = "ooga-booga-contract"
+version = "0.1.0"
+edition = "2025"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+alkanes_runtime = "0.1.0"
+alkanes_support = "0.1.0"
+metashrew_support = "0.1.0"
+anyhow = "1.0"
+
+[profile.release]
+opt-level = 's'     # Optimize for size
+lto = true          # Enable link-time optimization
+codegen-units = 1   # Reduce parallel code generation units to increase optimization
+panic = 'abort'     # Remove panic unwinding to reduce binary size
+strip = true        # Strip symbols from binary
