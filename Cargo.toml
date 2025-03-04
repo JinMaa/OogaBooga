@@ -1,0 +1,27 @@
+[package]
+name = "ooga-booga-contract"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib"]
+
+[features]
+default = ["alkanes"]
+alkanes = ["alkanes-runtime", "alkanes-support", "metashrew-support"]
+
+[dependencies]
+anyhow = "1.0"
+once_cell = "1.18"
+
+# Alkanes dependencies from GitHub
+alkanes-runtime = { git = "https://github.com/kungfuflex/alkanes-rs", package = "alkanes-runtime", optional = true }
+alkanes-support = { git = "https://github.com/kungfuflex/alkanes-rs", package = "alkanes-support", optional = true }
+metashrew-support = { git = "https://github.com/kungfuflex/alkanes-rs", package = "metashrew-support", optional = true }
+
+[profile.release]
+opt-level = 's'     # Optimize for size
+lto = true          # Enable link-time optimization
+codegen-units = 1   # Reduce parallel code generation units to increase optimization
+panic = 'abort'     # Remove panic unwinding to reduce binary size
+strip = true        # Strip symbols from binary

@@ -1,0 +1,140 @@
+# OOGA BOOGA Project Rules and Patterns
+
+## Naming Conventions
+
+1. **Storage Keys**
+   - Use kebab-case for storage key segments
+   - Use path-like format with forward slashes
+   - Examples: `/ooga-balance/{address}`, `/total-ooga`
+
+2. **Function Names**
+   - Use snake_case for function names (Rust convention)
+   - Use descriptive verbs for actions
+   - Examples: `claim_ooga`, `exchange_ooga_for_booga`
+
+3. **Variable Names**
+   - Use snake_case for variable names (Rust convention)
+   - Use descriptive nouns
+   - Examples: `ooga_balance`, `total_booga`
+
+## Code Structure
+
+1. **Contract Implementation**
+   - Separate storage implementation from contract logic
+   - Group related functions together
+   - Order functions by importance/usage
+
+2. **Error Handling**
+   - Use `anyhow` for error creation and propagation
+   - Provide descriptive error messages
+   - Use `?` operator for error propagation
+
+3. **Storage Access**
+   - Use getter/setter methods for storage access
+   - Centralize storage key definitions
+   - Use storage pointers for type safety
+
+## Opcode Conventions
+
+1. **Opcode Numbering**
+   - 0: Reserved for initialization
+   - 1-2: Action opcodes (claiming, exchanging)
+   - 3-6: Query opcodes (balance and supply queries)
+
+2. **Opcode Parameters**
+   - Use consistent parameter ordering
+   - Address parameters come first
+   - Amount parameters come second
+
+3. **Opcode Responses**
+   - Return empty response for actions
+   - Return binary data for queries
+   - Use little-endian byte order for numeric responses
+
+## Build Process
+
+1. **Optimization Priorities**
+   - Prioritize binary size over execution speed
+   - Use appropriate Rust optimization flags
+   - Apply WASM-specific optimizations
+
+2. **Compression**
+   - Always use gzip level 9 for final binary
+   - Verify compressed size is minimal
+
+## Testing Approach
+
+1. **Unit Testing**
+   - Test each opcode handler separately
+   - Test error conditions explicitly
+   - Verify storage operations
+
+2. **Integration Testing**
+   - Test complete contract flows
+   - Verify multi-operation sequences
+   - Test with realistic parameters
+
+## Documentation Standards
+
+1. **Code Comments**
+   - Document public functions with /// comments
+   - Explain complex logic with inline comments
+   - Document parameters and return values
+
+2. **External Documentation**
+   - Provide clear opcode documentation
+   - Document storage key format
+   - Include usage examples
+
+## Project-Specific Patterns
+
+1. **Token Claiming Pattern**
+   - Always increment balance by exactly 1
+   - Always update total supply
+   - Check for overflow before updating
+
+2. **Token Exchange Pattern**
+   - Always exchange exactly 1 token
+   - Check balance before exchange
+   - Update both token balances and supplies
+
+3. **Balance Tracking Pattern**
+   - Store balances per address
+   - Track total supply separately
+   - Use u128 for all balance values
+
+## Implementation Preferences
+
+1. **Error Handling**
+   - Prefer early returns for validation
+   - Use descriptive error messages
+   - Handle all potential error cases
+
+2. **Storage Operations**
+   - Minimize storage reads/writes
+   - Read values once, modify in memory, write once
+   - Use consistent storage key format
+
+3. **Code Organization**
+   - Group related functionality
+   - Separate storage logic from business logic
+   - Keep functions focused and single-purpose
+
+## Development Workflow
+
+1. **Feature Implementation**
+   - Implement core functionality first
+   - Add error handling
+   - Add tests
+   - Optimize
+
+2. **Testing Workflow**
+   - Write tests for happy path
+   - Add tests for error conditions
+   - Test edge cases
+   - Verify storage state
+
+3. **Documentation Workflow**
+   - Document as you code
+   - Update documentation when changing functionality
+   - Keep documentation in sync with code

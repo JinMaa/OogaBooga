@@ -1,7 +1,28 @@
-use alkanes_runtime::runtime::AlkaneResponder;
-use alkanes_support::response::CallResponse;
-use metashrew_support::compat::{to_arraybuffer_layout, to_ptr};
 use anyhow::{Result, anyhow};
+
+// Include the test modules
+#[cfg(test)]
+mod tests;
+#[cfg(test)]
+pub mod test_utils;
+
+// Use Alkanes dependencies when the "alkanes" feature is enabled
+#[cfg(feature = "alkanes")]
+use alkanes_runtime::runtime::AlkaneResponder;
+#[cfg(feature = "alkanes")]
+use alkanes_support::response::CallResponse;
+#[cfg(feature = "alkanes")]
+use metashrew_support::compat::{to_arraybuffer_layout, to_ptr};
+#[cfg(feature = "alkanes")]
+use alkanes_runtime::storage::StoragePointer;
+#[cfg(feature = "alkanes")]
+use alkanes_support::utils::shift_or_err;
+#[cfg(feature = "alkanes")]
+use metashrew_support::index_pointer::KeyValuePointer;
+
+// Use test implementations when in test mode
+#[cfg(all(test, not(feature = "alkanes")))]
+use test_utils::{AlkaneResponder, CallResponse, StoragePointer};
 
 #[derive(Default)]
 pub struct OogaBoogaContract(());
@@ -93,14 +114,18 @@ impl OogaBoogaContract {
     }
 }
 
-// Contract logic implementation
+// Contract logic implementation for Alkanes runtime
+#[cfg(feature = "alkanes")]
 impl AlkaneResponder for OogaBoogaContract {
     fn execute(&self) -> Result<CallResponse> {
         let context = self.context().unwrap();
         let mut inputs = context.inputs.clone();
         let mut response = CallResponse::forward(&context.incoming_alkanes);
 
-        match shift_or_err(&mut inputs)? {
+        // Get the opcode from the first input
+        let opcode = shift_or_err(&mut inputs)?;
+
+        match opcode {
             // Initialize contract - opcode 0
             0 => {
                 self.set_total_ooga(0);
@@ -110,29 +135,33 @@ impl AlkaneResponder for OogaBoogaContract {
 
             // Claim OOGA - opcode 1
             1 => {
-                let address = shift_or_err::<String>(&mut inputs)?;
-                self.claim_ooga(&address)?;
+                let address = shift_or_err(&mut inputs)?;
+                let address_str = format!("{}", address);
+                self.claim_ooga(&address_str)?;
                 Ok(response)
             },
 
             // Exchange OOGA for BOOGA - opcode 2
             2 => {
-                let address = shift_or_err::<String>(&mut inputs)?;
-                self.exchange_ooga_for_booga(&address)?;
+                let address = shift_or_err(&mut inputs)?;
+                let address_str = format!("{}", address);
+                self.exchange_ooga_for_booga(&address_str)?;
                 Ok(response)
             },
 
             // Query OOGA balance - opcode 3
             3 => {
-                let address = shift_or_err::<String>(&mut inputs)?;
-                response.data = self.ooga_balance_of(&address).to_le_bytes().to_vec();
+                let address = shift_or_err(&mut inputs)?;
+                let address_str = format!("{}", address);
+                response.data = self.ooga_balance_of(&address_str).to_le_bytes().to_vec();
                 Ok(response)
             },
 
             // Query BOOGA balance - opcode 4
             4 => {
-                let address = shift_or_err::<String>(&mut inputs)?;
-                response.data = self.booga_balance_of(&address).to_le_bytes().to_vec();
+                let address = shift_or_err(&mut inputs)?;
+                let address_str = format!("{}", address);
+                response.data = self.booga_balance_of(&address_str).to_le_bytes().to_vec();
                 Ok(response)
             },
 
@@ -153,6 +182,8 @@ impl AlkaneResponder for OogaBoogaContract {
     }
 }
 
+// Only include the WASM export when the "alkanes" feature is enabled
+#[cfg(feature = "alkanes")]
 #[no_mangle]
 pub extern "C" fn __execute() -> i32 {
     let mut response = to_arraybuffer_layout(&OogaBoogaContract::default().run());
